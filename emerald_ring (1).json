@@ -1,0 +1,73 @@
+package com.example.mcaconcubines.attachment;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
+import net.neoforged.neoforge.common.util.INBTSerializable;
+
+import java.util.Optional;
+import java.util.UUID;
+
+public class VillagerConcubineData implements INBTSerializable<CompoundTag> {
+
+    public static final float PROB_ACEPTA_CONCUBINA = 0.40f;
+    public static final float PROB_PERMITE_CONCUBINAS = 0.30f;
+
+    private boolean aceptaRolConcubina;
+    private boolean permiteConcubinas;
+    private boolean inicializado = false;
+    private UUID uuidDueño = null;
+
+    public VillagerConcubineData() {}
+
+    public void inicializarSiNecesario(java.util.Random random) {
+        if (!inicializado) {
+            aceptaRolConcubina = random.nextFloat() < PROB_ACEPTA_CONCUBINA;
+            permiteConcubinas = random.nextFloat() < PROB_PERMITE_CONCUBINAS;
+            inicializado = true;
+        }
+    }
+
+    public boolean aceptaConcubina() {
+        return aceptaRolConcubina;
+    }
+
+    public boolean permiteQueMaridoTengaConcubinas() {
+        return permiteConcubinas;
+    }
+
+    public boolean tieneDueño() {
+        return uuidDueño != null;
+    }
+
+    public Optional<UUID> getUUIDDueño() {
+        return Optional.ofNullable(uuidDueño);
+    }
+
+    public void setDueño(UUID uuid) {
+        this.uuidDueño = uuid;
+    }
+
+    public void liberarDueño() {
+        this.uuidDueño = null;
+    }
+
+    @Override
+    public CompoundTag serializeNBT(HolderLookup.Provider provider) {
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean("aceptaRol", aceptaRolConcubina);
+        tag.putBoolean("permiteConc", permiteConcubinas);
+        tag.putBoolean("init", inicializado);
+        if (uuidDueño != null) {
+            tag.putUUID("dueño", uuidDueño);
+        }
+        return tag;
+    }
+
+    @Override
+    public void deserializeNBT(HolderLookup.Provider provider, CompoundTag tag) {
+        aceptaRolConcubina = tag.getBoolean("aceptaRol");
+        permiteConcubinas = tag.getBoolean("permiteConc");
+        inicializado = tag.getBoolean("init");
+        uuidDueño = tag.hasUUID("dueño") ? tag.getUUID("dueño") : null;
+    }
+}

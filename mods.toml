@@ -1,0 +1,61 @@
+package com.example.mcaconcubines.attachment;
+
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
+import net.neoforged.neoforge.common.util.INBTSerializable;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+public class PlayerConcubineData implements INBTSerializable<CompoundTag> {
+
+    private final List<UUID> concubinas = new ArrayList<>();
+
+    public PlayerConcubineData() {}
+
+    public boolean esConcubina(UUID uuid) {
+        return concubinas.contains(uuid);
+    }
+
+    public void añadirConcubina(UUID uuid) {
+        if (!concubinas.contains(uuid)) {
+            concubinas.add(uuid);
+        }
+    }
+
+    public void eliminarConcubina(UUID uuid) {
+        concubinas.remove(uuid);
+    }
+
+    public List<UUID> getConcubinas() {
+        return Collections.unmodifiableList(concubinas);
+    }
+
+    public int getCantidad() {
+        return concubinas.size();
+    }
+
+    @Override
+    public CompoundTag serializeNBT(net.minecraft.core.HolderLookup.Provider provider) {
+        CompoundTag tag = new CompoundTag();
+        ListTag lista = new ListTag();
+        for (UUID uuid : concubinas) {
+            lista.add(StringTag.valueOf(uuid.toString()));
+        }
+        tag.put("concubinas", lista);
+        return tag;
+    }
+
+    @Override
+    public void deserializeNBT(net.minecraft.core.HolderLookup.Provider provider, CompoundTag tag) {
+        concubinas.clear();
+        ListTag lista = tag.getList("concubinas", Tag.TAG_STRING);
+        for (int i = 0; i < lista.size(); i++) {
+            concubinas.add(UUID.fromString(lista.getString(i)));
+        }
+    }
+}

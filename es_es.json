@@ -1,0 +1,66 @@
+package com.example.mcaconcubines.event;
+
+import com.example.mcaconcubines.McaConcubinesMod;
+import com.example.mcaconcubines.attachment.ModAttachments;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.EntityEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.minecraft.world.entity.npc.AbstractVillager;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+
+@Mod.EventBusSubscriber(modid = McaConcubinesMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.NEOFORGE)
+public class ModEvents {
+
+    /**
+     * Cuando un villager entra al mundo, inicializamos sus datos de concubina aleatoriamente.
+     */
+    @SubscribeEvent
+    public static void onVillagerJoinLevel(EntityJoinLevelEvent event) {
+        if (event.getEntity() instanceof AbstractVillager villager && !villager.level().isClientSide) {
+            var data = ModAttachments.getVillagerConcubineData(villager);
+            data.inicializarSiNecesario(villager.getRandom());
+        }
+    }
+
+    /**
+     * Cuando un villager (concubina) muere, actualizar los datos del jugador.
+     */
+    @SubscribeEvent
+    public static void onVillagerDeath(LivingDeathEvent event) {
+        if (event.getEntity() instanceof AbstractVillager villager && !villager.level().isClientSide) {
+            var villagerData = ModAttachments.getVillagerConcubineData(villager);
+
+            // Si es concubina de alguien, notificar al dueño
+            if (villagerData.tieneDueño()) {
+                var dueñoUUID = villagerData.getUUIDDueño().get();
+                var dueño = villager.level().getPlayerByUUID(dueñoUUID);
+
+                if (dueño != null) {
+                    var playerData = ModAttachments.getPlayerConcubineData(dueño);
+                    playerData.eliminarConcubina(villager.getUUID());
+
+                    dueño.displayClientMessage(
+                            net.minecraft.network.chat.Component.literal(
+                                    "§4" + villager.getName().getString() + " ha fallecido."),
+                            false);
+
+                    McaConcubinesMod.LOGGER.info("Concubina {} murió, removida de {}", 
+                            villager.getName().getString(), dueño.getName().getString());
+                }
+            }
+        }
+    }
+
+    /**
+     * Evento para permitir que concubinas tengan hijos.
+     * (Esto requeriría hook con MCA Reborn, implementar según su API)
+     */
+    public static void manejarReproduccionConcubina(AbstractVillager concubina, AbstractVillager marido, Player jugador) {
+        // Aquí iría la lógica de reproducción si MCA Reborn lo permite
+        // Por ahora dejamos el placeholder
+        McaConcubinesMod.LOGGER.info("Reproducción con concubina registrada");
+    }
+}

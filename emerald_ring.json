@@ -1,0 +1,26 @@
+package com.example.mcaconcubines;
+
+import com.example.mcaconcubines.attachment.ModAttachments;
+import com.example.mcaconcubines.event.ModEvents;
+import com.example.mcaconcubines.item.ModItems;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
+
+@Mod(McaConcubinesMod.MOD_ID)
+public class McaConcubinesMod {
+
+    public static final String MOD_ID = "mca_concubines";
+    public static final Logger LOGGER = LogUtils.getLogger();
+
+    public McaConcubinesMod(IEventBus modEventBus) {
+        ModItems.register(modEventBus);
+        ModAttachments.register(modEventBus);
+
+        NeoForge.EVENT_BUS.register(ModEvents.class);
+
+        LOGGER.info("[MCA Concubines] Addon cargado correctamente.");
+    }
+}
